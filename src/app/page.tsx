@@ -1,65 +1,68 @@
-import Image from "next/image";
+import Link from "next/link";
+import { ArrowRight, Database, CloudRain } from "lucide-react";
 
 export default function Home() {
   return (
-    <div className="flex min-h-screen items-center justify-center bg-zinc-50 font-sans dark:bg-black">
-      <main className="flex min-h-screen w-full max-w-3xl flex-col items-center justify-between py-32 px-16 bg-white dark:bg-black sm:items-start">
-        <Image
-          className="dark:invert"
-          src="/next.svg"
-          alt="Next.js logo"
-          width={100}
-          height={20}
-          priority
-        />
-        <div className="flex flex-col items-center gap-6 text-center sm:items-start sm:text-left">
-          <h1 className="max-w-xs text-3xl font-semibold leading-10 tracking-tight text-black dark:text-zinc-50">
-            To get started, edit the page.tsx file.
+    <main className="min-h-screen bg-slate-50">
+      {/* Hero Section */}
+      <section className="bg-slate-900 text-white py-20 px-6">
+        <div className="max-w-4xl mx-auto text-center space-y-6">
+          <h1 className="text-4xl md:text-6xl font-extrabold tracking-tight">
+            Educational API Practice
           </h1>
-          <p className="max-w-md text-lg leading-8 text-zinc-600 dark:text-zinc-400">
-            Looking for a starting point or more instructions? Head over to{" "}
-            <a
-              href="https://vercel.com/templates?framework=next.js&utm_source=create-next-app&utm_medium=appdir-template-tw&utm_campaign=create-next-app"
-              className="font-medium text-zinc-950 dark:text-zinc-50"
-            >
-              Templates
-            </a>{" "}
-            or the{" "}
-            <a
-              href="https://nextjs.org/learn?utm_source=create-next-app&utm_medium=appdir-template-tw&utm_campaign=create-next-app"
-              className="font-medium text-zinc-950 dark:text-zinc-50"
-            >
-              Learning
-            </a>{" "}
-            center.
+          <p className="text-lg md:text-xl text-slate-300 max-w-2xl mx-auto">
+            데이터 수집 및 정제 처리, API 활용법을 실습하기 위해 구축된 교육용 플랫폼입니다. 
+            전력거래소(KPX) 및 기상청(KMA) 데이터를 원본과 유사한 스펙으로 모의 호출해 볼 수 있습니다.
           </p>
+          <div className="pt-8">
+            <Link 
+              href="/api-docs" 
+              className="inline-flex items-center gap-2 bg-blue-600 hover:bg-blue-500 text-white px-8 py-4 rounded-full font-semibold transition-colors shadow-lg hover:shadow-xl"
+            >
+              Swagger UI 열기 <ArrowRight size={20} />
+            </Link>
+          </div>
         </div>
-        <div className="flex flex-col gap-4 text-base font-medium sm:flex-row">
-          <a
-            className="flex h-12 w-full items-center justify-center gap-2 rounded-full bg-foreground px-5 text-background transition-colors hover:bg-[#383838] dark:hover:bg-[#ccc] md:w-[158px]"
-            href="https://vercel.com/new?utm_source=create-next-app&utm_medium=appdir-template-tw&utm_campaign=create-next-app"
-            target="_blank"
-            rel="noopener noreferrer"
-          >
-            <Image
-              className="dark:invert"
-              src="/vercel.svg"
-              alt="Vercel logomark"
-              width={16}
-              height={16}
-            />
-            Deploy Now
-          </a>
-          <a
-            className="flex h-12 w-full items-center justify-center rounded-full border border-solid border-black/[.08] px-5 transition-colors hover:border-transparent hover:bg-black/[.04] dark:border-white/[.145] dark:hover:bg-[#1a1a1a] md:w-[158px]"
-            href="https://nextjs.org/docs?utm_source=create-next-app&utm_medium=appdir-template-tw&utm_campaign=create-next-app"
-            target="_blank"
-            rel="noopener noreferrer"
-          >
-            Documentation
-          </a>
+      </section>
+
+      {/* Features / Available APIs */}
+      <section className="max-w-5xl mx-auto py-20 px-6">
+        <h2 className="text-3xl font-bold text-slate-900 mb-12 text-center">
+          지원하는 API 목록
+        </h2>
+        
+        <div className="grid md:grid-cols-3 gap-8">
+          {/* KPX Card */}
+          <div className="bg-white p-8 rounded-2xl shadow-sm border border-slate-100 hover:shadow-md transition-shadow">
+            <div className="w-12 h-12 bg-orange-100 text-orange-600 rounded-xl flex items-center justify-center mb-6">
+              <Database size={24} />
+            </div>
+            <h3 className="text-xl font-bold text-slate-900 mb-3">전력거래소 (KPX)</h3>
+            <p className="text-slate-600 mb-4 text-sm leading-relaxed">
+              제주 및 육지 계통한계가격(SMP)과 예상되는 전력수요 예측 데이터를 조회합니다.
+            </p>
+            <code className="text-xs bg-slate-100 text-slate-800 px-3 py-1.5 rounded-md break-all">
+              GET /openapi/kpx/smp-demand
+            </code>
+          </div>
+
+          {/* KMA Card */}
+          <div className="bg-white p-8 rounded-2xl shadow-sm border border-slate-100 hover:shadow-md transition-shadow">
+            <div className="w-12 h-12 bg-blue-100 text-blue-600 rounded-xl flex items-center justify-center mb-6">
+              <CloudRain size={24} />
+            </div>
+            <h3 className="text-xl font-bold text-slate-900 mb-3">기상청 (KMA)</h3>
+            <p className="text-slate-600 mb-4 text-sm leading-relaxed">
+              국내 지상 기상관측망(ASOS)의 관측 자료(온도, 강수량, 풍속 등)를 조회합니다.
+            </p>
+            <code className="text-xs bg-slate-100 text-slate-800 px-3 py-1.5 rounded-md break-all">
+              GET /openapi/kma/observation
+            </code>
+          </div>
+
+
         </div>
-      </main>
-    </div>
+      </section>
+    </main>
   );
 }
