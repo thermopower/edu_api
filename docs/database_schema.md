@@ -103,3 +103,16 @@ CREATE TABLE kma_observation (
 Next.js의 서버리스 배포 환경에서 TCP 연결이 고갈되는 현상을 방지하기 위해, 웹소켓 기반 풀러를 지원하는 `@neondatabase/serverless` 라이브러리를 사용합니다.
 - **코드 위치**: `src/infrastructure/database/neon.ts` 내부에 Singleton 기반 풀링으로 구현되어 있습니다.
 - **단방향 의존성**: 도메인 및 프레젠테이션 계층은 DB 접속정보나 해당 라이브러리를 직접 호출하지 않으며, `src/infrastructure/repositories/*`를 거쳐 안전하게 데이터를 가져오도록 아키텍처가 분리되어 있습니다.
+
+---
+
+## 4. 데이터 적재 프로세스 (Seeding)
+
+데이터베이스의 초기값 및 최신 데이터를 유지하기 위해 별도의 시딩 스크립트가 포함되어 있습니다.
+- **실행 명령어**: `npm run seed` (`tsx scripts/seed.ts` 실행)
+- **작동 방식**:
+    1. 기상청 API 허브에서 서울 등 5개 거점의 실시간 관측자료를 가져와 `kma_observation` 테이블에 적재합니다.
+    2. 전력거래소 API에서 SMP 및 수요예측 데이터를 가져와 `kpx_smp_forecast` 테이블에 적재합니다.
+    3. `ON CONFLICT` 구문을 사용하여 이미 존재하는 데이터(동일 시간/지점)는 중복 저장되지 않도록 방지합니다.
+
+

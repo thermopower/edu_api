@@ -20,6 +20,16 @@ You can start editing the page by modifying `app/page.tsx`. The page auto-update
 
 This project uses [`next/font`](https://nextjs.org/docs/app/building-your-application/optimizing/fonts) to automatically optimize and load [Geist](https://vercel.com/font), a new font family for Vercel.
 
+# Educational API Practice
+
+이 프로젝트는 학생들이 공공 데이터(기상청, 전력거래소)의 API 활용법을 실습하기 위해 만들어진 **Next.js (App Router)** 기반의 API 서버입니다.
+
+## 핵심 특징
+- **실시간 데이터 연동**: Neon Serverless PostgreSQL에 실제 기상청 및 전력거래소 데이터를 적재하여 제공합니다.
+- **보안 강화**: 20개의 사전 발급된 API 키를 통한 Header 기반(`x-api-key`) 인증을 적용했습니다.
+- **자동 실데이터 적재**: `npm run seed` 명령어를 통해 최신 공공데이터를 DB로 마이그레이션할 수 있습니다.
+- **OpenAPI 지원**: `/api-docs`를 통해 인터랙티브한 Swagger UI를 제공합니다.
+
 ## Learn More
 
 To learn more about Next.js, take a look at the following resources:

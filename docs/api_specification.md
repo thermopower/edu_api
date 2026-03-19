@@ -41,13 +41,20 @@
 | `help` | `string` | N | `1` 이면 필드 도움말 추가 |
 
 ### 응답 구조 (JSON)
-응답은 `response > body > items > item`의 계층 구조를 갖습니다.
-* `TM`: 관측시각 (KST)
-* `STN`: 국내 지점번호
-* `TA`: 기온 (Temperature)
-* `HM`: 상대습도 (Humidity)
-* `RN`: 강수량 (Rainfall)
-* `WD` / `WS`: 풍향 / 풍속 등 다수지표 포함
+응답은 `response > body > items > item`의 계층 구조를 갖습니다. 기상청 API 허브의 46개 모든 필드를 포함합니다.
+
+*   **주요 관측 필드**:
+    *   `TM`: 관측시각 (KST, `YYYYMMDDHHmm`)
+    *   `STN`: 국내 지점번호 (예: 108 서울)
+    *   `TA`: 기온 (°C)
+    *   `HM`: 상대습도 (%)
+    *   `RN`: 강수량 (mm)
+    *   `WS`: 풍속 (m/s)
+    *   `WD`: 풍속 (36방위)
+    *   `PA` / `PS`: 현지기압 / 해면기압 (hPa)
+    *   `TS`: 지면온도 (°C)
+*   **기타**: `GST_WS`(순간최대풍속), `VS`(시정), `SS`(일조), `SI`(일사) 등 총 46개 지표 제공
+
 
 ---
 
