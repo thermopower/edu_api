@@ -1,5 +1,6 @@
 import { NextResponse } from "next/server";
 import { validateApiKey } from "@/application/auth/apiKeyValidator";
+import { getKmaObservations } from "@/infrastructure/repositories/kmaRepository";
 
 /**
  * @swagger
@@ -87,31 +88,77 @@ export async function GET(request: Request) {
   }
 
   const { searchParams } = new URL(request.url);
+  const tm = searchParams.get("tm");
+  const stn = searchParams.get("stn");
   
-  return NextResponse.json({
-    response: {
-      header: { resultCode: "00", resultMsg: "NORMAL SERVICE." },
-      body: {
-        dataType: "JSON",
-        items: {
-          item: [
-            {
-              TM: searchParams.get("tm") || "202310121500",
-              STN: searchParams.get("stn") || "108",
-              WD: "16",
-              WS: "2.3",
-              TA: "21.5",
-              HM: "45.0",
-              RN: "0.0",
-              PA: "998.1",
-              PS: "1009.2",
-            }
-          ]
-        },
-        numOfRows: 10,
-        pageNo: 1,
-        totalCount: 100,
+  try {
+    const items = await getKmaObservations(tm, stn);
+    
+    const itemFormatted = items.map((row) => ({
+      TM: row.tm,
+      STN: row.stn.toString(),
+      WD: row.wd || "",
+      WS: row.ws || "",
+      GST_WD: row.gst_wd || "",
+      GST_WS: row.gst_ws || "",
+      GST_TM: row.gst_tm || "",
+      PA: row.pa || "",
+      PS: row.ps || "",
+      PT: row.pt || "",
+      PR: row.pr || "",
+      TA: row.ta || "",
+      TD: row.td || "",
+      HM: row.hm || "",
+      PV: row.pv || "",
+      RN: row.rn || "",
+      RN_DAY: row.rn_day || "",
+      RN_INT: row.rn_int || "",
+      SD_HR3: row.sd_hr3 || "",
+      SD_DAY: row.sd_day || "",
+      SD_TOT: row.sd_tot || "",
+      WC: row.wc || "",
+      WP: row.wp || "",
+      WW: row.ww || "",
+      CA_TOT: row.ca_tot || "",
+      CA_MID: row.ca_mid || "",
+      CH_MIN: row.ch_min || "",
+      CT: row.ct || "",
+      CT_TOP: row.ct_top || "",
+      CT_MID: row.ct_mid || "",
+      CT_LOW: row.ct_low || "",
+      VS: row.vs || "",
+      SS: row.ss || "",
+      SI: row.si || "",
+      ST_GD: row.st_gd || "",
+      TS: row.ts || "",
+      TE_005: row.te_005 || "",
+      TE_01: row.te_01 || "",
+      TE_02: row.te_02 || "",
+      TE_03: row.te_03 || "",
+      ST_SEA: row.st_sea || "",
+      WH: row.wh || "",
+      BF: row.bf || "",
+      IR: row.ir || "",
+      IX: row.ix || "",
+      RN_JUN: row.rn_jun || "",
+    }));
+
+    return NextResponse.json({
+      response: {
+        header: { resultCode: "00", resultMsg: "NORMAL SERVICE." },
+        body: {
+          dataType: "JSON",
+          items: {
+            item: itemFormatted,
+          },
+          numOfRows: items.length,
+          pageNo: 1,
+          totalCount: items.length,
+        }
       }
-    }
-  });
+    });
+  } catch (error) {
+    console.error("API error:", error);
+    return NextResponse.json({ error: "Internal Server Error" }, { status: 500 });
+  }
 }

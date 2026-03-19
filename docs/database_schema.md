@@ -94,3 +94,12 @@ CREATE TABLE kma_observation (
 * `tm`: `YYYYMMDDHHmm` 형식 (예: 202310121500)
 * `stn`: 기상청 지점번호 (예: 108 서울)
 * 관측값이 없는 경우를 대비하여 주요 수치들은 Nullable한 구조 혹은 문자열로 저장 후 앱단에서 처리합니다. (외부 API 응답 스펙을 최대한 원본 그대로 반영하기 위해 `VARCHAR`가 주로 사용되었습니다.)
+
+---
+
+## 3. 데이터베이스 연동 아키텍처 (Infrastructure Layer)
+
+해당 스키마로 구축된 데이터베이스는 **Neon Serverless PostgreSQL**를 사용하고 있습니다. 
+Next.js의 서버리스 배포 환경에서 TCP 연결이 고갈되는 현상을 방지하기 위해, 웹소켓 기반 풀러를 지원하는 `@neondatabase/serverless` 라이브러리를 사용합니다.
+- **코드 위치**: `src/infrastructure/database/neon.ts` 내부에 Singleton 기반 풀링으로 구현되어 있습니다.
+- **단방향 의존성**: 도메인 및 프레젠테이션 계층은 DB 접속정보나 해당 라이브러리를 직접 호출하지 않으며, `src/infrastructure/repositories/*`를 거쳐 안전하게 데이터를 가져오도록 아키텍처가 분리되어 있습니다.

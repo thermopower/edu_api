@@ -1,6 +1,6 @@
 # Educational API Practice - API Specification
 
-본 프로젝트는 학생들이 공공 데이터(기상청, 전력거래소)의 API 활용법을 실습하기 위해 만들어진 **Next.js (App Router)** 기반의 모의 API(Mock API) 서버입니다. 내부적으로 `Zod`와 `next-swagger-doc`을 사용하여 OpenAPI(Swagger) 스펙을 자동 생성합니다.
+본 프로젝트는 학생들이 공공 데이터(기상청, 전력거래소)의 API 활용법을 실습하기 위해 만들어진 **Next.js (App Router)** 기반의 API 서버입니다. **Neon Serverless PostgreSQL** 에 연동되어 실제 저장된 관측/예측 데이터를 제공하도록 설계되었습니다 (단방향 레이어드 아키텍처 적용). 내부적으로 `Zod`와 `next-swagger-doc`을 사용하여 OpenAPI(Swagger) 스펙을 자동 생성합니다.
 
 ## 1. 전력거래소 (KPX) SMP 및 수요예측 API
 * **Endpoint**: `GET /openapi/kpx/smp-demand`

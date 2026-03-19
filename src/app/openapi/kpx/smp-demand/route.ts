@@ -1,5 +1,6 @@
 import { NextResponse } from "next/server";
 import { validateApiKey } from "@/application/auth/apiKeyValidator";
+import { getKpxSmpDemand } from "@/infrastructure/repositories/kpxRepository";
 
 /**
  * @swagger
@@ -93,29 +94,39 @@ export async function GET(request: Request) {
   }
 
   const { searchParams } = new URL(request.url);
+  const date = searchParams.get("date");
+  const pageNo = Number(searchParams.get("pageNo") || 1);
+  const numOfRows = Number(searchParams.get("numOfRows") || 10);
   
-  return NextResponse.json({
-    response: {
-      header: { resultCode: "00", resultMsg: "NORMAL SERVICE." },
-      body: {
-        items: {
-          item: [
-            {
-              date: searchParams.get("date") || "20231012",
-              hour: "1",
-              areaName: "육지",
-              smp: "140.24",
-              mlfd: "65000.00",
-              jlfd: "1200.00",
-              slfd: "66200.00",
-              rn: "1",
-            }
-          ]
-        },
-        numOfRows: Number(searchParams.get("numOfRows") || 10),
-        pageNo: Number(searchParams.get("pageNo") || 1),
-        totalCount: 100,
+  try {
+    const { items, totalCount } = await getKpxSmpDemand(date, pageNo, numOfRows);
+    
+    const itemFormatted = items.map((row, index) => ({
+      date: row.date,
+      hour: row.hour.toString(),
+      areaName: row.area_name,
+      smp: row.smp || "0.00",
+      mlfd: row.mlfd || "0.00",
+      jlfd: row.jlfd || "0.00",
+      slfd: row.slfd || "0.00",
+      rn: ((pageNo - 1) * numOfRows + index + 1).toString(),
+    }));
+
+    return NextResponse.json({
+      response: {
+        header: { resultCode: "00", resultMsg: "NORMAL SERVICE." },
+        body: {
+          items: {
+            item: itemFormatted,
+          },
+          numOfRows,
+          pageNo,
+          totalCount,
+        }
       }
-    }
-  });
+    });
+  } catch (error) {
+    console.error("API error:", error);
+    return NextResponse.json({ error: "Internal Server Error" }, { status: 500 });
+  }
 }
