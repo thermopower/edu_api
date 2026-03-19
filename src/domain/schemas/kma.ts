@@ -4,7 +4,6 @@ export const kmaRequestSchema = z.object({
   tm: z.string().optional().describe("년월일시분(KST) 또는 년월일(KST), 없으면 현재시간"),
   stn: z.string().optional().describe("지점번호, :로 구분, 0 또는 없으면 전체 지점"),
   help: z.string().optional().describe("1이면 필드 도움말 추가"),
-  authKey: z.string().min(1).describe("발급된 API 인증키"),
 });
 
 export const kmaResponseItemSchema = z.object({

@@ -1,4 +1,5 @@
 import { NextResponse } from "next/server";
+import { validateApiKey } from "@/application/auth/apiKeyValidator";
 
 /**
  * @swagger
@@ -7,12 +8,12 @@ import { NextResponse } from "next/server";
  *     summary: 기상청 지상관측(ASOS) 조회
  *     description: 국내 지상 기상관측망(ASOS)의 관측 자료를 조회합니다.
  *     parameters:
- *       - in: query
- *         name: authKey
+ *       - in: header
+ *         name: x-api-key
  *         required: true
  *         schema:
  *           type: string
- *         description: 기상청 API 인증키
+ *         description: 사전 발급된 API 인증키 (20개 중 택 1)
  *       - in: query
  *         name: tm
  *         required: false
@@ -57,8 +58,34 @@ import { NextResponse } from "next/server";
  *                   numOfRows: 10
  *                   pageNo: 1
  *                   totalCount: 100
+ *       400:
+ *         description: 잘못된 요청 (파라미터 오류 등)
+ *         content:
+ *           application/json:
+ *             schema:
+ *               type: object
+ *               properties:
+ *                 error:
+ *                   type: string
+ *       401:
+ *         description: 인증 실패 (유효하지 않거나 누락된 x-api-key 헤더)
+ *         content:
+ *           application/json:
+ *             schema:
+ *               type: object
+ *               properties:
+ *                 error:
+ *                   type: string
+ *       500:
+ *         description: 서버 내부 오류
  */
 export async function GET(request: Request) {
+  const isValid = await validateApiKey();
+  
+  if (!isValid) {
+    return NextResponse.json({ error: "Unauthorized: Invalid or missing x-api-key header" }, { status: 401 });
+  }
+
   const { searchParams } = new URL(request.url);
   
   return NextResponse.json({

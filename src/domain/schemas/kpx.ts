@@ -1,7 +1,6 @@
 import { z } from "zod";
 
 export const kpxRequestSchema = z.object({
-  serviceKey: z.string().min(1).describe("공공데이터포털에서 받은 인증키"),
   pageNo: z.string().min(1).describe("페이지번호 (예: '1')"),
   numOfRows: z.string().min(1).describe("한 페이지 결과 수 (예: '10')"),
   dataType: z.string().min(1).describe("응답메시지 형식 (xml, json)"),
