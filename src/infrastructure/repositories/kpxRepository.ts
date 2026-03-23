@@ -1,4 +1,5 @@
 import { query } from "@/infrastructure/database/neon";
+import type { KpxFetchResult } from "@/infrastructure/external/kpxApiClient";
 
 export interface KpxSmpForecast {
   id: string;
@@ -48,4 +49,30 @@ export async function getKpxSmpDemand(date: string | null, pageNo: number, numOf
   const totalCount = parseInt(countResult[0]?.cnt || "0", 10);
   
   return { items, totalCount };
+}
+
+export async function saveKpxForecasts(items: KpxFetchResult[]) {
+  if (!items || items.length === 0) return 0;
+  
+  let insertedCount = 0;
+  const sql = `
+    INSERT INTO kpx_smp_forecast (date, hour, area_name, smp, mlfd, jlfd, slfd) 
+    VALUES ($1, $2, $3, $4, $5, $6, $7) 
+    ON CONFLICT (date, hour, area_name) DO NOTHING
+  `;
+
+  for (const item of items) {
+    await query(sql, [
+      item.date, 
+      item.hour, 
+      item.areaName, 
+      item.smp || null, 
+      item.mlfd || null, 
+      item.jlfd || null, 
+      item.slfd || null
+    ]);
+    insertedCount++;
+  }
+  
+  return insertedCount;
 }

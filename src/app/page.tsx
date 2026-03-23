@@ -14,12 +14,18 @@ export default function Home() {
             데이터 수집 및 정제 처리, API 활용법을 실습하기 위해 구축된 교육용 플랫폼입니다. 
             전력거래소(KPX) 및 기상청(KMA) 데이터를 원본과 유사한 스펙으로 모의 호출해 볼 수 있습니다.
           </p>
-          <div className="pt-8">
+          <div className="pt-8 flex flex-col sm:flex-row items-center justify-center gap-4">
             <Link 
               href="/api-docs" 
-              className="inline-flex items-center gap-2 bg-blue-600 hover:bg-blue-500 text-white px-8 py-4 rounded-full font-semibold transition-colors shadow-lg hover:shadow-xl"
+              className="inline-flex items-center justify-center gap-2 bg-slate-800 hover:bg-slate-700 text-white px-8 py-4 rounded-full font-semibold transition-colors shadow-lg hover:shadow-xl w-full sm:w-auto"
             >
               Swagger UI 열기 <ArrowRight size={20} />
+            </Link>
+            <Link 
+              href="/data-collection" 
+              className="inline-flex items-center justify-center gap-2 bg-blue-600 hover:bg-blue-500 text-white px-8 py-4 rounded-full font-semibold transition-colors shadow-lg hover:shadow-xl w-full sm:w-auto"
+            >
+              데이터 수집하기 <Database size={20} />
             </Link>
           </div>
         </div>

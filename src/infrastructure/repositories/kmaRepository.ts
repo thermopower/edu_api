@@ -1,4 +1,5 @@
 import { query } from "@/infrastructure/database/neon";
+import type { KmaFetchResult } from "@/infrastructure/external/kmaApiClient";
 
 export interface KmaObservation {
   id: string;
@@ -73,4 +74,41 @@ export async function getKmaObservations(tm: string | null, stnStr: string | nul
   
   const items = await query<KmaObservation>(sql, params);
   return items;
+}
+
+export async function saveKmaObservations(items: KmaFetchResult[]) {
+  if (!items || items.length === 0) return 0;
+  
+  let insertedCount = 0;
+  const sql = `
+    INSERT INTO kma_observation (
+      tm, stn, wd, ws, gst_wd, gst_ws, gst_tm, pa, ps, pt, pr, ta, td, hm, pv, 
+      rn, rn_day, rn_jun, rn_int, sd_hr3, sd_day, sd_tot, wc, wp, ww, ca_tot, ca_mid, 
+      ch_min, ct, ct_top, ct_mid, ct_low, vs, ss, si, st_gd, ts, te_005, te_01, te_02, te_03, 
+      st_sea, wh, bf, ir, ix
+    ) VALUES (
+      $1, $2, $3, $4, $5, $6, $7, $8, $9, $10, $11, $12, $13, $14, $15, 
+      $16, $17, $18, $19, $20, $21, $22, $23, $24, $25, $26, $27, $28, $29, $30, $31, $32, 
+      $33, $34, $35, $36, $37, $38, $39, $40, $41, $42, $43, $44, $45, $46
+    ) ON CONFLICT (tm, stn) DO NOTHING
+  `;
+
+  for (const item of items) {
+    await query(sql, [
+      item.tm, item.stn, item.wd || null, item.ws || null, item.gst_wd || null, 
+      item.gst_ws || null, item.gst_tm || null, item.pa || null, item.ps || null, 
+      item.pt || null, item.pr || null, item.ta || null, item.td || null, 
+      item.hm || null, item.pv || null, item.rn || null, item.rn_day || null, 
+      item.rn_jun || null, item.rn_int || null, item.sd_hr3 || null, item.sd_day || null, 
+      item.sd_tot || null, item.wc || null, item.wp || null, item.ww || null, 
+      item.ca_tot || null, item.ca_mid || null, item.ch_min || null, item.ct || null, 
+      item.ct_top || null, item.ct_mid || null, item.ct_low || null, item.vs || null, 
+      item.ss || null, item.si || null, item.st_gd || null, item.ts || null, 
+      item.te_005 || null, item.te_01 || null, item.te_02 || null, item.te_03 || null, 
+      item.st_sea || null, item.wh || null, item.bf || null, item.ir || null, item.ix || null
+    ]);
+    insertedCount++;
+  }
+  
+  return insertedCount;
 }

@@ -1,0 +1,6 @@
+/* Add a red separator line above the example 'Responses' header when actual evaluation is present */
+.swagger-ui .responses-inner > div > h4 {
+    border-top: 2px solid red;
+    padding-top: 20px;
+    margin-top: 30px;
+}
