@@ -75,7 +75,7 @@ import { getKpxSmpDemand } from "@/infrastructure/repositories/kpxRepository";
  *                 error:
  *                   type: string
  *       401:
- *         description: 인증 실패 (유효하지 않거나 누락된 x-api-key 헤더)
+ *         description: 인증 실패 (유효하지 않거나 누락된 x-api-key)
  *         content:
  *           application/json:
  *             schema:
@@ -87,10 +87,10 @@ import { getKpxSmpDemand } from "@/infrastructure/repositories/kpxRepository";
  *         description: 서버 내부 오류
  */
 export async function GET(request: Request) {
-  const isValid = await validateApiKey();
+  const isValid = await validateApiKey(request);
   
   if (!isValid) {
-    return NextResponse.json({ error: "Unauthorized: Invalid or missing x-api-key header" }, { status: 401 });
+    return NextResponse.json({ error: "Unauthorized: Invalid or missing x-api-key" }, { status: 401 });
   }
 
   const { searchParams } = new URL(request.url);
