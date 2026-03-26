@@ -8,15 +8,32 @@ import { saveKmaMidFcst } from "@/infrastructure/repositories/kmaRepository";
 export async function executeCollectKmaMidFcstUseCase() {
   const targetStations = ["108", "109"]; // 전국(108), 서울/인천/경기(109)
   
-  const today = new Date();
-  const formatTmFc = (d: Date) => {
-    const yyyy = d.getFullYear();
-    const mm = String(d.getMonth() + 1).padStart(2, '0');
-    const dd = String(d.getDate()).padStart(2, '0');
-    // 중기예보는 0600, 1800 두번 발표. 보통 최신 데이터로 업데이트를 위해 임시로 당일 0600으로 설정
-    return `${yyyy}${mm}${dd}0600`;
+  const getLatestTmFc = (): string => {
+    const now = new Date();
+    // UTC to KST
+    const kst = new Date(now.getTime() + 9 * 60 * 60 * 1000);
+    const yyyy = kst.getUTCFullYear();
+    const mm = String(kst.getUTCMonth() + 1).padStart(2, '0');
+    const dd = String(kst.getUTCDate()).padStart(2, '0');
+    const hours = kst.getUTCHours();
+
+    if (hours < 6) {
+      // 전날 18:00
+      const prev = new Date(kst.getTime() - 24 * 60 * 60 * 1000);
+      const pyyyy = prev.getUTCFullYear();
+      const pmm = String(prev.getUTCMonth() + 1).padStart(2, '0');
+      const pdd = String(prev.getUTCDate()).padStart(2, '0');
+      return `${pyyyy}${pmm}${pdd}1800`;
+    } else if (hours < 18) {
+      // 오늘 06:00
+      return `${yyyy}${mm}${dd}0600`;
+    } else {
+      // 오늘 18:00
+      return `${yyyy}${mm}${dd}1800`;
+    }
   };
-  const tmFcStr = formatTmFc(today);
+  
+  const tmFcStr = getLatestTmFc();
   
   let totalInserted = 0;
   const errors: string[] = [];
