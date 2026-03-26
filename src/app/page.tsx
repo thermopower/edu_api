@@ -52,17 +52,31 @@ export default function Home() {
             </code>
           </div>
 
-          {/* KMA Card */}
+          {/* KMA Card - Observation */}
           <div className="bg-white p-8 rounded-2xl shadow-sm border border-slate-100 hover:shadow-md transition-shadow">
             <div className="w-12 h-12 bg-blue-100 text-blue-600 rounded-xl flex items-center justify-center mb-6">
               <CloudRain size={24} />
             </div>
-            <h3 className="text-xl font-bold text-slate-900 mb-3">기상청 (KMA)</h3>
+            <h3 className="text-xl font-bold text-slate-900 mb-3">기상청 (KMA) - 지상관측</h3>
             <p className="text-slate-600 mb-4 text-sm leading-relaxed">
               국내 지상 기상관측망(ASOS)의 관측 자료(온도, 강수량, 풍속 등)를 조회합니다.
             </p>
             <code className="text-xs bg-slate-100 text-slate-800 px-3 py-1.5 rounded-md break-all">
               GET /openapi/kma/observation
+            </code>
+          </div>
+
+          {/* KMA Card - Mid Forecast */}
+          <div className="bg-white p-8 rounded-2xl shadow-sm border border-slate-100 hover:shadow-md transition-shadow">
+            <div className="w-12 h-12 bg-indigo-100 text-indigo-600 rounded-xl flex items-center justify-center mb-6">
+              <CloudRain size={24} />
+            </div>
+            <h3 className="text-xl font-bold text-slate-900 mb-3">기상청 (KMA) - 중기예보</h3>
+            <p className="text-slate-600 mb-4 text-sm leading-relaxed">
+              기상청의 중기예보(육상) 기상전망 데이터를 조회합니다.
+            </p>
+            <code className="text-xs bg-slate-100 text-slate-800 px-3 py-1.5 rounded-md break-all">
+              GET /openapi/kma/mid-fcst
             </code>
           </div>
 

@@ -1,20 +1,21 @@
 import { NextResponse } from "next/server";
 import { validateApiKey } from "@/application/auth/apiKeyValidator";
-import { getKpxSmpDemand } from "@/infrastructure/repositories/kpxRepository";
+import { getKmaMidFcst } from "@/infrastructure/repositories/kmaRepository";
 
 /**
  * @swagger
- * /openapi/kpx/smp-demand:
+ * /openapi/kma/mid-fcst:
  *   get:
- *     summary: 전력거래소 SMP 및 수요예측 조회
- *     description: 미래의 시간별 제주 및 육지 계통한계가격(SMP)과 예상되는 전력수요 예측 데이터를 조회합니다.
+ *     summary: 기상청 중기예보 조회
+ *     description: 기상청의 중기예보(육상) 기상전망 데이터를 조회합니다.
  *     parameters:
  *       - in: query
  *         name: x-api-key
- *         required: true
+ *         required: false
  *         schema:
  *           type: string
  *         description: 사전 발급된 API 인증키
+
  *       - in: query
  *         name: pageNo
  *         required: true
@@ -29,16 +30,22 @@ import { getKpxSmpDemand } from "@/infrastructure/repositories/kpxRepository";
  *         description: 한 페이지 결과 수
  *       - in: query
  *         name: dataType
- *         required: true
- *         schema:
- *           type: string
- *         description: 응답메시지 형식 (xml, json)
- *       - in: query
- *         name: date
  *         required: false
  *         schema:
  *           type: string
- *         description: 일자 (YYYYMMDD)
+ *         description: 응답메시지 형식 (XML, JSON)
+ *       - in: query
+ *         name: stnId
+ *         required: true
+ *         schema:
+ *           type: string
+ *         description: 지점번호 (108 전국, 109 서울/인천/경기도)
+ *       - in: query
+ *         name: tmFc
+ *         required: true
+ *         schema:
+ *           type: string
+ *         description: 발표시각 (YYYYMMDD0600 또는 YYYYMMDD1800)
  *     responses:
  *       200:
  *         description: 성공
@@ -52,37 +59,17 @@ import { getKpxSmpDemand } from "@/infrastructure/repositories/kpxRepository";
  *                   resultCode: "00"
  *                   resultMsg: "NORMAL SERVICE."
  *                 body:
+ *                   dataType: "JSON"
  *                   items:
  *                     item:
- *                       - date: "20231012"
- *                         hour: "1"
- *                         areaName: "육지"
- *                         smp: "140.24"
- *                         mlfd: "65000.00"
- *                         jlfd: "1200.00"
- *                         slfd: "66200.00"
- *                         rn: "1"
+ *                       - wfSv: "기상전망 내용입니다..."
  *                   numOfRows: 10
  *                   pageNo: 1
- *                   totalCount: 100
+ *                   totalCount: 3
  *       400:
- *         description: 잘못된 요청 (파라미터 오류 등)
- *         content:
- *           application/json:
- *             schema:
- *               type: object
- *               properties:
- *                 error:
- *                   type: string
+ *         description: 잘못된 요청
  *       401:
  *         description: 인증 실패 (유효하지 않거나 누락된 x-api-key)
- *         content:
- *           application/json:
- *             schema:
- *               type: object
- *               properties:
- *                 error:
- *                   type: string
  *       500:
  *         description: 서버 내부 오류
  */
@@ -94,28 +81,31 @@ export async function GET(request: Request) {
   }
 
   const { searchParams } = new URL(request.url);
-  const date = searchParams.get("date");
-  const pageNo = Number(searchParams.get("pageNo") || 1);
-  const numOfRows = Number(searchParams.get("numOfRows") || 10);
+  const stnId = searchParams.get("stnId");
+  const tmFc = searchParams.get("tmFc");
+  const pageNoStr = searchParams.get("pageNo");
+  const numOfRowsStr = searchParams.get("numOfRows");
+
+  if (!stnId || !tmFc || !pageNoStr || !numOfRowsStr) {
+    return NextResponse.json({ error: "Missing required parameters: stnId, tmFc, pageNo, numOfRows" }, { status: 400 });
+  }
+
+  const pageNo = Number(pageNoStr);
+  const numOfRows = Number(numOfRowsStr);
+  const dataType = searchParams.get("dataType") || "JSON";
 
   try {
-    const { items, totalCount } = await getKpxSmpDemand(date, pageNo, numOfRows);
+    const { items, totalCount } = await getKmaMidFcst(stnId, tmFc, pageNo, numOfRows);
 
-    const itemFormatted = items.map((row, index) => ({
-      date: row.date,
-      hour: row.hour.toString(),
-      areaName: row.area_name,
-      smp: row.smp || "0.00",
-      mlfd: row.mlfd || "0.00",
-      jlfd: row.jlfd || "0.00",
-      slfd: row.slfd || "0.00",
-      rn: ((pageNo - 1) * numOfRows + index + 1).toString(),
+    const itemFormatted = items.map((row) => ({
+      wfSv: row.wf_sv || ""
     }));
 
     return NextResponse.json({
       response: {
         header: { resultCode: "00", resultMsg: "NORMAL SERVICE." },
         body: {
+          dataType: dataType.toUpperCase(),
           items: {
             item: itemFormatted,
           },
@@ -126,7 +116,7 @@ export async function GET(request: Request) {
       }
     });
   } catch (error) {
-    console.error("API error:", error);
+    console.error("MidFcst API error:", error);
     return NextResponse.json({ error: "Internal Server Error" }, { status: 500 });
   }
 }

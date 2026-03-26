@@ -160,3 +160,56 @@ export async function fetchKmaObservationData(dateStr: string, stn: number): Pro
 
   return items;
 }
+
+export interface KmaMidFcstFetchResult {
+  stnId: string;
+  tmFc: string;
+  wfSv: string;
+  dataType: string;
+}
+
+/**
+ * 기상청 중기예보(육상) API 호출 함수
+ */
+export async function fetchKmaMidFcst(stnId: string, tmFc: string, pageNo: string = "1", numOfRows: string = "10", dataType: string = "JSON"): Promise<KmaMidFcstFetchResult[]> {
+  // 공공데이터포털 API를 사용하므로 KPX_API_KEY를 재사용합니다.
+  const apiKey = process.env.KPX_API_KEY;
+  if (!apiKey || apiKey === "여기에_기상청_API_키를_입력하세요" || apiKey.includes("\n")) {
+    throw new Error("KPX_API_KEY가 설정되지 않았습니다.");
+  }
+
+  let safeApiKey = apiKey;
+  try { safeApiKey = decodeURIComponent(apiKey); } catch(e) {}
+  const encodedKey = encodeURIComponent(safeApiKey);
+
+  const url = `http://apis.data.go.kr/1360000/MidFcstInfoService/getMidFcst?ServiceKey=${encodedKey}&pageNo=${pageNo}&numOfRows=${numOfRows}&dataType=${dataType}&stnId=${stnId}&tmFc=${tmFc}`;
+
+  const res = await fetch(url, {
+    method: "GET"
+  });
+
+  const textData = await res.text();
+  
+  try {
+    const data = JSON.parse(textData);
+    const resultCode = data?.response?.header?.resultCode;
+
+    if (resultCode && resultCode !== '00') {
+      throw new Error(`KMA MidFcst API 에러: ${data?.response?.header?.resultMsg}`);
+    }
+
+    const items = data?.response?.body?.items?.item || [];
+    
+    return items.map((item: any) => ({
+      stnId,
+      tmFc,
+      wfSv: item.wfSv || "",
+      dataType
+    }));
+  } catch (error) {
+    if (textData.includes("OpenAPI_ServiceResponse")) {
+      throw new Error("외부 KMA API 서버에서 XML 포맷 에러 메시지를 반환했습니다(상태이상 또는 제공 한도 초과 등).");
+    }
+    throw error;
+  }
+}

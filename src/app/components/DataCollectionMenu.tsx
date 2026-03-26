@@ -1,12 +1,13 @@
 "use client";
 
 import { useState, useTransition } from "react";
-import { collectKmaDataAction, collectKpxDataAction } from "../actions/data-collection";
+import { collectKmaDataAction, collectKpxDataAction, collectKmaMidFcstDataAction } from "../actions/data-collection";
 import { Database, CloudRain, Loader2, CheckCircle2 } from "lucide-react";
 
 export function DataCollectionMenu() {
   const [isPendingKma, startTransitionKma] = useTransition();
   const [isPendingKpx, startTransitionKpx] = useTransition();
+  const [isPendingKmaMid, startTransitionKmaMid] = useTransition();
   const [message, setMessage] = useState<{ type: "success" | "error"; text: string } | null>(null);
 
   const handleKmaCollection = () => {
@@ -43,6 +44,23 @@ export function DataCollectionMenu() {
     });
   };
 
+  const handleKmaMidCollection = () => {
+    setMessage(null);
+    startTransitionKmaMid(async () => {
+      try {
+        const result = await collectKmaMidFcstDataAction();
+        if (result.success) {
+          setMessage({ type: "success", text: `[KMA 중기예보] 기상청 중기예보 데이터 ${result.count}건이 새롭게 수집되었습니다.` });
+        } else {
+          setMessage({ type: "error", text: `[KMA 중기예보] 수집 실패: ${result.error || "알 수 없는 에러"}` });
+        }
+      } catch (err) {
+        const msg = err instanceof Error ? err.message : String(err);
+        setMessage({ type: "error", text: `[KMA 중기예보] 요청 중 에러 발생: ${msg}` });
+      }
+    });
+  };
+
   return (
     <section className="max-w-5xl mx-auto py-12 px-6">
       <div className="bg-slate-900 rounded-3xl p-8 md:p-12 text-white shadow-2xl relative overflow-hidden">
@@ -63,7 +81,7 @@ export function DataCollectionMenu() {
             </div>
           )}
 
-          <div className="grid md:grid-cols-2 gap-6 relative">
+          <div className="grid md:grid-cols-3 gap-6 relative">
             {/* KMA Collection Card */}
             <div className="bg-slate-800/80 backdrop-blur-xl border border-slate-700/50 p-6 flex flex-col items-start justify-between rounded-2xl group hover:border-blue-500/50 transition-all duration-300">
               <div className="w-12 h-12 bg-blue-500/20 text-blue-400 rounded-xl flex items-center justify-center mb-6 group-hover:scale-110 transition-transform">
@@ -114,6 +132,33 @@ export function DataCollectionMenu() {
                   </>
                 ) : (
                   "KPX 수집 실행"
+                )}
+              </button>
+            </div>
+
+            {/* KMA Mid Forecast Collection Card */}
+            <div className="bg-slate-800/80 backdrop-blur-xl border border-slate-700/50 p-6 flex flex-col items-start justify-between rounded-2xl group hover:border-indigo-500/50 transition-all duration-300">
+              <div className="w-12 h-12 bg-indigo-500/20 text-indigo-400 rounded-xl flex items-center justify-center mb-6 group-hover:scale-110 transition-transform">
+                <CloudRain size={24} />
+              </div>
+              <div>
+                <h3 className="text-xl font-bold mb-2">기상청 (KMA) 중기예보 수집</h3>
+                <p className="text-slate-400 text-sm mb-6">
+                  전국(108) 및 서울, 인천, 경기도(109) 지역의 중기예보 기상전망 데이터를 즉시 가져와 DB에 삽입합니다.
+                </p>
+              </div>
+              <button
+                onClick={handleKmaMidCollection}
+                disabled={isPendingKmaMid}
+                className="w-full flex items-center justify-center gap-2 bg-indigo-600 hover:bg-indigo-500 disabled:bg-slate-700 text-white px-6 py-3 rounded-xl font-semibold transition-all duration-200"
+              >
+                {isPendingKmaMid ? (
+                  <>
+                    <Loader2 size={18} className="animate-spin" />
+                    수집 처리 중...
+                  </>
+                ) : (
+                  "KMA 중기예보 수집 실행"
                 )}
               </button>
             </div>

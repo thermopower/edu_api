@@ -97,7 +97,30 @@ CREATE TABLE kma_observation (
 
 ---
 
-## 3. 데이터베이스 연동 아키텍처 (Infrastructure Layer)
+## 3. 기상청 중기예보 테이블 (`kma_midfcst`)
+
+기상청의 중기예보(육상) 기상전망 자료를 저장합니다.
+
+```sql
+CREATE TABLE kma_midfcst (
+    stn_id VARCHAR(10) NOT NULL,        -- 지점번호
+    tm_fc VARCHAR(12) NOT NULL,         -- 발표시각 (YYYYMMDD0600 등)
+    wf_sv TEXT,                         -- 기상전망 내용
+    data_type VARCHAR(10),              -- 데이터 타입
+    created_at TIMESTAMP DEFAULT NOW(), -- 저장시각
+    
+    PRIMARY KEY (stn_id, tm_fc)
+);
+```
+
+### 컬럼 설명
+* `stn_id`: 기상청 지점번호 (예: 108 전국, 109 서울/인천/경기)
+* `tm_fc`: `YYYYMMDDHHmm` 형식의 발표시각 (1일 2회: 06시, 18시)
+* `wf_sv`: 최대 1000자 길이의 기상 상세 전망 정보 텍스트
+
+---
+
+## 4. 데이터베이스 연동 아키텍처 (Infrastructure Layer)
 
 해당 스키마로 구축된 데이터베이스는 **Neon Serverless PostgreSQL**를 사용하고 있습니다. 
 Next.js의 서버리스 배포 환경에서 TCP 연결이 고갈되는 현상을 방지하기 위해, 웹소켓 기반 풀러를 지원하는 `@neondatabase/serverless` 라이브러리를 사용합니다.
@@ -106,13 +129,14 @@ Next.js의 서버리스 배포 환경에서 TCP 연결이 고갈되는 현상을
 
 ---
 
-## 4. 데이터 적재 프로세스 (Seeding)
+## 5. 데이터 적재 프로세스 (Seeding)
 
 데이터베이스의 초기값 및 최신 데이터를 유지하기 위해 별도의 시딩 스크립트가 포함되어 있습니다.
 - **실행 명령어**: `npm run seed` (`tsx scripts/seed.ts` 실행)
 - **작동 방식**:
-    1. 기상청 API 허브에서 서울 등 5개 거점의 실시간 관측자료를 가져와 `kma_observation` 테이블에 적재합니다.
-    2. 전력거래소 API에서 SMP 및 수요예측 데이터를 가져와 `kpx_smp_forecast` 테이블에 적재합니다.
-    3. `ON CONFLICT` 구문을 사용하여 이미 존재하는 데이터(동일 시간/지점)는 중복 저장되지 않도록 방지합니다.
+    1. 기상청 API 허브에서 실시간 관측자료를 가져와 `kma_observation` 테이블에 적재합니다.
+    2. 기상청 공공데이터포털에서 중기예보 기상전망을 가져와 `kma_midfcst` 테이블에 적재합니다.
+    3. 전력거래소 API에서 SMP 및 수요예측 데이터를 가져와 `kpx_smp_forecast` 테이블에 적재합니다.
+    4. `ON CONFLICT` 구문을 사용하여 중복 데이터는 업데이트되거나 건너뜁니다.
 
 

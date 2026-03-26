@@ -1,5 +1,5 @@
 import { query } from "@/infrastructure/database/neon";
-import type { KmaFetchResult } from "@/infrastructure/external/kmaApiClient";
+import type { KmaFetchResult, KmaMidFcstFetchResult } from "@/infrastructure/external/kmaApiClient";
 
 export interface KmaObservation {
   id: string;
@@ -106,6 +106,80 @@ export async function saveKmaObservations(items: KmaFetchResult[]) {
       item.ss || null, item.si || null, item.st_gd || null, item.ts || null, 
       item.te_005 || null, item.te_01 || null, item.te_02 || null, item.te_03 || null, 
       item.st_sea || null, item.wh || null, item.bf || null, item.ir || null, item.ix || null
+    ]);
+    insertedCount++;
+  }
+  
+  return insertedCount;
+}
+
+export interface KmaMidFcst {
+  stn_id: string;
+  tm_fc: string;
+  wf_sv: string;
+  data_type: string | null;
+  created_at: Date;
+}
+
+export async function getKmaMidFcst(stnId: string | null, tmFc: string | null, pageNo: number, numOfRows: number) {
+  let sql = "SELECT * FROM kma_midfcst WHERE 1=1";
+  const params: unknown[] = [];
+  
+  if (stnId) {
+    params.push(stnId);
+    sql += ` AND stn_id = $${params.length}`;
+  }
+  if (tmFc) {
+    params.push(tmFc);
+    sql += ` AND tm_fc = $${params.length}`;
+  }
+  
+  sql += " ORDER BY tm_fc DESC, stn_id ASC";
+  
+  const offset = (pageNo - 1) * numOfRows;
+  
+  params.push(numOfRows);
+  sql += ` LIMIT $${params.length}`;
+  
+  params.push(offset);
+  sql += ` OFFSET $${params.length}`;
+
+  let countSql = "SELECT COUNT(*) as cnt FROM kma_midfcst WHERE 1=1";
+  const countParams: unknown[] = [];
+  if (stnId) {
+    countParams.push(stnId);
+    countSql += ` AND stn_id = $${countParams.length}`;
+  }
+  if (tmFc) {
+    countParams.push(tmFc);
+    countSql += ` AND tm_fc = $${countParams.length}`;
+  }
+  
+  const [items, countResult] = await Promise.all([
+    query<KmaMidFcst>(sql, params),
+    query<{ cnt: string }>(countSql, countParams)
+  ]);
+  
+  const totalCount = parseInt(countResult[0]?.cnt || "0", 10);
+  
+  return { items, totalCount };
+}
+
+export async function saveKmaMidFcst(items: KmaMidFcstFetchResult[]) {
+  if (!items || items.length === 0) return 0;
+  
+  let insertedCount = 0;
+  const sql = `
+    INSERT INTO kma_midfcst (stn_id, tm_fc, wf_sv, data_type) 
+    VALUES ($1, $2, $3, $4) 
+    ON CONFLICT (stn_id, tm_fc) DO UPDATE SET 
+      wf_sv = EXCLUDED.wf_sv, 
+      data_type = EXCLUDED.data_type
+  `;
+
+  for (const item of items) {
+    await query(sql, [
+      item.stnId, item.tmFc, item.wfSv || null, item.dataType || null
     ]);
     insertedCount++;
   }

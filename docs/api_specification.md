@@ -9,7 +9,7 @@
 ### 요청 파라미터
 | 파라미터명 | 방식 | 필수 여부 | 설명 |
 |---|---|---|---|
-| `x-api-key` | `Header` | Y | 사전 발급된 API 인증키 (20개 중 택 1) |
+| `x-api-key` | `Query/Header` | Y | 사전 발급된 API 인증키 (20개 중 택 1) |
 | `pageNo` | `string` | Y | 페이지 번호 |
 | `numOfRows` | `string` | Y | 한 페이지 결과 수 |
 | `dataType` | `string` | Y | 응답메시지 형식 (`xml` 또는 `json`) |
@@ -35,7 +35,7 @@
 ### 요청 파라미터
 | 파라미터명 | 방식 | 필수 여부 | 설명 |
 |---|---|---|---|
-| `x-api-key` | `Header` | Y | 사전 발급된 API 인증키 (20개 중 택 1) |
+| `x-api-key` | `Query/Header` | Y | 사전 발급된 API 인증키 (20개 중 택 1) |
 | `tm` | `string` | N | 년월일시분(KST) 또는 년월일(KST) (생략 시 현재 시각) |
 | `stn` | `string` | N | 지점번호 (`:`로 구분, `0` 또는 생략 시 전체 지점) |
 | `help` | `string` | N | `1` 이면 필드 도움말 추가 |
@@ -58,18 +58,37 @@
 
 ---
 
-## 3. 공통 HTTP 상태 코드 (Responses)
+## 3. 기상청 (KMA) 중기예보(육상) API
+* **Endpoint**: `GET /openapi/kma/mid-fcst`
+* **설명**: 기상청 중기예보(육상) 기상전망 데이터를 조회합니다.
+
+### 요청 파라미터
+| 파라미터명 | 방식 | 필수 여부 | 설명 |
+|---|---|---|---|
+| `x-api-key` | `Query/Header` | Y | 사전 발급된 API 인증키 (20개 중 택 1) |
+| `pageNo` | `string` | Y | 페이지 번호 |
+| `numOfRows` | `string` | Y | 한 페이지 결과 수 |
+| `dataType` | `string` | N | 응답 형식 (`XML` 또는 `JSON`) |
+| `stnId` | `string` | Y | 지점번호 (108 전국, 109 서울 등) |
+| `tmFc` | `string` | Y | 발표시각 (예: 202310170600) |
+
+### 응답 구조 (JSON)
+*   `wfSv`: 1000자 이내의 기상전망 상세 텍스트 정보
+
+---
+
+## 4. 공통 HTTP 상태 코드 (Responses)
 모든 API 응답은 아래의 HTTP 상태 코드를 따릅니다.
 
 | 상태 코드 | 의미 | 설명 |
 |---|---|---|
 | `200` | **OK** | 요청이 성공적으로 처리되었으며 데이터를 정상 반환함 |
 | `400` | **Bad Request** | 필수 파라미터 누락, 잘못된 타입 등 클라이언트 측 요청 오류 |
-| `401` | **Unauthorized** | 헤더에 `x-api-key`가 누락되었거나 유효하지 않은 키를 사용함 |
+| `401` | **Unauthorized** | 파라미터나 헤더에 `x-api-key`가 누락되었거나 유효하지 않은 키를 사용함 |
 | `500` | **Internal Server Error** | 서버 내부 또는 외부 공공데이터 연동 과정에서 알 수 없는 오류 발생 |
 
 ---
 
-## 4. Swagger 명세(UI) 접근 방법
+## 5. Swagger 명세(UI) 접근 방법
 서버가 실행 중일 때 브라우저에서 아래 주소로 접속하면 Swagger 인터랙티브 UI를 통해 API 테스트가 가능합니다.
 * **접속 주소**: `http://localhost:3000/api-docs`

@@ -9,12 +9,12 @@ import { getKmaObservations } from "@/infrastructure/repositories/kmaRepository"
  *     summary: 기상청 지상관측(ASOS) 조회
  *     description: 국내 지상 기상관측망(ASOS)의 관측 자료를 조회합니다.
  *     parameters:
- *       - in: header
+ *       - in: query
  *         name: x-api-key
  *         required: true
  *         schema:
  *           type: string
- *         description: 사전 발급된 API 인증키 (20개 중 택 1)
+ *         description: 사전 발급된 API 인증키
  *       - in: query
  *         name: tm
  *         required: false
@@ -82,7 +82,7 @@ import { getKmaObservations } from "@/infrastructure/repositories/kmaRepository"
  */
 export async function GET(request: Request) {
   const isValid = await validateApiKey(request);
-  
+
   if (!isValid) {
     return NextResponse.json({ error: "Unauthorized: Invalid or missing x-api-key" }, { status: 401 });
   }
@@ -90,10 +90,10 @@ export async function GET(request: Request) {
   const { searchParams } = new URL(request.url);
   const tm = searchParams.get("tm");
   const stn = searchParams.get("stn");
-  
+
   try {
     const items = await getKmaObservations(tm, stn);
-    
+
     const itemFormatted = items.map((row) => ({
       TM: row.tm,
       STN: row.stn.toString(),
