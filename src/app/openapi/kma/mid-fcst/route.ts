@@ -102,18 +102,16 @@ export async function GET(request: Request) {
     }));
 
     return NextResponse.json({
-      response: {
-        header: { resultCode: "00", resultMsg: "NORMAL SERVICE." },
-        body: {
-          dataType: dataType.toUpperCase(),
-          items: {
-            item: itemFormatted,
-          },
-          numOfRows,
-          pageNo,
-          totalCount,
-        }
-      }
+      header: { resultCode: "00", resultMsg: "NORMAL SERVICE." },
+      body: {
+        dataType: dataType.toUpperCase(),
+        totalCount: totalCount.toString(),
+        numOfRows: numOfRows.toString(),
+        pageNo: pageNo.toString(),
+        items: {
+          item: itemFormatted,
+        },
+      },
     });
   } catch (error) {
     console.error("MidFcst API error:", error);
