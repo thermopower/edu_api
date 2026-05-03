@@ -102,14 +102,16 @@ export async function GET(request: Request) {
     }));
 
     return NextResponse.json({
-      header: { resultCode: "00", resultMsg: "NORMAL SERVICE." },
-      body: {
-        dataType: dataType.toUpperCase(),
-        totalCount: totalCount.toString(),
-        numOfRows: numOfRows.toString(),
-        pageNo: pageNo.toString(),
-        items: {
-          item: itemFormatted,
+      response: {
+        header: { resultCode: "00", resultMsg: "NORMAL SERVICE." },
+        body: {
+          dataType: dataType.toUpperCase(),
+          totalCount: totalCount.toString(),
+          numOfRows: numOfRows.toString(),
+          pageNo: pageNo.toString(),
+          items: {
+            item: itemFormatted,
+          },
         },
       },
     });
