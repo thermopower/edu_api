@@ -144,18 +144,10 @@ export async function GET(request: Request) {
     }));
 
     return NextResponse.json({
-      response: {
-        header: { resultCode: "00", resultMsg: "NORMAL SERVICE." },
-        body: {
-          dataType: "JSON",
-          totalCount: items.length.toString(),
-          numOfRows: items.length.toString(),
-          pageNo: "1",
-          items: {
-            item: itemFormatted,
-          },
-        },
-      },
+      totalCount: items.length.toString(),
+      numOfRows: items.length.toString(),
+      pageNo: "1",
+      items: itemFormatted,
     });
   } catch (error) {
     console.error("API error:", error);
